@@ -29,7 +29,7 @@ from app.firestore_backend import add_to_watchlist, get_watchlist, remove_from_w
 from app.video_tool import generate_stock_video
 from app.a2ui_utils import a2ui_callback
 
-MODEL = "gemini-3.6-flash"
+MODEL = "gemini-2.5-flash"
 
 schema_manager = A2uiSchemaManager(
     version="0.8",

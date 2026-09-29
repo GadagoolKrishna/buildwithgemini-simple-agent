@@ -170,7 +170,29 @@ function renderReply(b, parts) {
   const texts = parts.filter(p => p && (p.kind === "text" || (!p.kind && p.text))).map(p => p.text || "");
   const a2ui = parts.filter(p => p && p.kind === "a2ui" && p.data).map(p => p.data);
 
-  const textStr = texts.join("\n").trim();
+  // If the agent returned A2UI JSON wrapped in <a2ui-json> inside a text part, extract it:
+  const remainingTexts = [];
+  for (const t of texts) {
+    const a2uiMatch = t.match(/<a2ui-json>([\s\S]*?)<\/a2ui-json>/);
+    if (a2uiMatch) {
+      try {
+        const parsed = JSON.parse(a2uiMatch[1].trim());
+        const comps = parsed.components || [];
+        const rootComp = comps.find(c => c.id === 'root' || c.id.includes('root')) || comps[0];
+        const rootId = rootComp ? rootComp.id : 'root';
+        a2ui.push({ beginRendering: { root: rootId } });
+        a2ui.push({ surfaceUpdate: { components: comps } });
+        const cleanText = t.replace(/<a2ui-json>[\s\S]*?<\/a2ui-json>/g, '').trim();
+        if (cleanText) remainingTexts.push(cleanText);
+      } catch (e) {
+        remainingTexts.push(t);
+      }
+    } else {
+      remainingTexts.push(t);
+    }
+  }
+
+  const textStr = remainingTexts.join("\n").trim();
   if (textStr) b.appendChild(el("div", null, textStr));
 
   if (a2ui.length) {

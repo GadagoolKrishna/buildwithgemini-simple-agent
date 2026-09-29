@@ -78,10 +78,14 @@ simple-agent/
 │       ├── reasoning_engine_adapter.py # Console playground adapter
 │       └── services.py        # Shared Session, Artifact, and Memory Bank services
 ├── agents-cli-manifest.yaml   # Agent deployment metadata
+├── docs/
+│   └── INTEGRATION_GUIDE.md   # Usage & integration guide + verified prompt library
 ├── pyproject.toml             # Python project dependencies
 ├── demo.gif                   # Looping recording of the agent in action
 └── demo.webm                  # Source screen recording
 ```
+
+For detailed protocol documentation, API call examples, and a verified prompt library, see the [Usage & Integration Guide](docs/INTEGRATION_GUIDE.md).
 
 ---
 

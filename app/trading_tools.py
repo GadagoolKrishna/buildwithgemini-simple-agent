@@ -12,22 +12,76 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import difflib
 import json
 import urllib.parse
 import urllib.request
 from typing import Any, Dict, List, Optional
+
+_KNOWN_TICKER_MAP = {
+    "NVIDE": "NVDA",
+    "NVIDIA": "NVDA",
+    "NVDIA": "NVDA",
+    "NVDA": "NVDA",
+    "APPLE": "AAPL",
+    "APLE": "AAPL",
+    "AAPL": "AAPL",
+    "TESLA": "TSLA",
+    "TSLA": "TSLA",
+    "MICROSOFT": "MSFT",
+    "MSFT": "MSFT",
+    "GOOGLE": "GOOGL",
+    "ALPHABET": "GOOGL",
+    "GOOGL": "GOOGL",
+    "GOOG": "GOOG",
+    "AMAZON": "AMZN",
+    "AMZN": "AMZN",
+    "META": "META",
+    "FACEBOOK": "META",
+    "NETFLIX": "NFLX",
+    "NFLX": "NFLX",
+}
+
+_COMPANY_NAMES = list(_KNOWN_TICKER_MAP.keys())
+
+
+def normalize_symbol(query_or_symbol: str) -> str:
+    """Normalizes a stock ticker or company name, resolving common typos and aliases."""
+    raw = query_or_symbol.strip().upper()
+    if raw in _KNOWN_TICKER_MAP:
+        return _KNOWN_TICKER_MAP[raw]
+    # Check for close typo matches (e.g. NVIDE -> NVIDIA -> NVDA)
+    close = difflib.get_close_matches(raw, _COMPANY_NAMES, n=1, cutoff=0.7)
+    if close:
+        return _KNOWN_TICKER_MAP[close[0]]
+    return raw
 
 
 def search_ticker(company_or_query: str) -> Dict[str, Any]:
     """Searches for a stock ticker symbol given a company name or query string.
 
     Args:
-        company_or_query: The name of the company or query (e.g. 'Apple', 'Tesla', 'Microsoft', 'NVDA').
+        company_or_query: The name of the company or query (e.g. 'Apple', 'Tesla', 'Microsoft', 'NVDA', 'NVIDE').
 
     Returns:
         A dictionary with matched tickers including symbol, company name, exchange, and quote type.
     """
     clean_query = company_or_query.strip()
+    norm_sym = normalize_symbol(clean_query)
+    
+    # If normalized to a known ticker, return direct match immediately
+    if norm_sym != clean_query.upper() and norm_sym in ("NVDA", "AAPL", "TSLA", "MSFT", "GOOGL", "AMZN", "META", "NFLX"):
+        return {
+            "query": clean_query,
+            "best_match_symbol": norm_sym,
+            "matches": [{
+                "symbol": norm_sym,
+                "name": clean_query,
+                "exchange": "NMS",
+                "type": "EQUITY"
+            }]
+        }
+
     encoded = urllib.parse.quote(clean_query)
     url = f"https://query2.finance.yahoo.com/v1/finance/search?q={encoded}&quotesCount=5&newsCount=0"
     
@@ -62,7 +116,7 @@ def search_ticker(company_or_query: str) -> Dict[str, Any]:
                         "type": q.get("quoteType")
                     })
             
-            best_match = results[0]["symbol"] if results else clean_query.upper()
+            best_match = results[0]["symbol"] if results else norm_sym
             return {
                 "query": clean_query,
                 "best_match_symbol": best_match,
@@ -71,7 +125,7 @@ def search_ticker(company_or_query: str) -> Dict[str, Any]:
     except Exception as e:
         return {
             "query": clean_query,
-            "best_match_symbol": clean_query.upper(),
+            "best_match_symbol": norm_sym,
             "matches": [],
             "error": str(e)
         }
@@ -122,7 +176,7 @@ def get_crossover_signals(symbol: str) -> Dict[str, Any]:
         A dictionary containing current price, 1-year high/low, SMA 20, SMA 50, SMA 200, RSI 14,
         recent crossover status, and algorithmic swing trade recommendation (BUY, SELL, or HOLD).
     """
-    clean_sym = symbol.strip().upper()
+    clean_sym = normalize_symbol(symbol)
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{clean_sym}?range=1y&interval=1d"
     
     req = urllib.request.Request(
@@ -291,7 +345,7 @@ def get_company_news_sentiment(symbol: str) -> Dict[str, Any]:
     Returns:
         A dictionary containing recent news headlines, publication dates, and a sentiment summary.
     """
-    clean_sym = symbol.strip().upper()
+    clean_sym = normalize_symbol(symbol)
     url = f"https://feeds.finance.yahoo.com/rss/2.0/headline?s={clean_sym}&region=US&lang=en-US"
     
     req = urllib.request.Request(

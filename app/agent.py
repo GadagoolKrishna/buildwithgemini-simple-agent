@@ -26,6 +26,7 @@ from a2ui.basic_catalog.provider import BasicCatalog
 
 from app.trading_tools import search_ticker, get_crossover_signals, get_company_news_sentiment
 from app.firestore_backend import add_to_watchlist, get_watchlist, remove_from_watchlist
+from app.video_tool import generate_stock_video
 from app.a2ui_utils import a2ui_callback
 
 MODEL = "gemini-3.6-flash"
@@ -37,16 +38,17 @@ schema_manager = A2uiSchemaManager(
 
 instruction = schema_manager.generate_system_prompt(
     role_description=(
-        "You are an expert Quantitative Swing Trading Assistant specializing in Moving Average Crossover Strategies "
-        "and managing the user's persistent trade watchlist in Firestore. "
+        "You are an expert Quantitative Swing Trading Assistant specializing in Moving Average Crossover Strategies, "
+        "managing the user's persistent trade watchlist in Firestore, and generating dynamic 3D financial videos. "
         "When analyzing a company or stock: "
         "1. If given a company name, call search_ticker to resolve the symbol. "
         "2. Call get_crossover_signals to fetch 1-year OHLCV indicators, moving averages, and crossover events. "
         "3. Call get_company_news_sentiment to inspect breaking headlines and catalyst risks. "
         "4. Synthesize disciplined BUY, SELL, or HOLD recommendations with key price levels (Entry, Stop Loss, Target, Support/Resistance). "
-        "When asked about the watchlist, call get_watchlist, add_to_watchlist, or remove_from_watchlist."
+        "When asked about the watchlist, call get_watchlist, add_to_watchlist, or remove_from_watchlist. "
+        "When asked to generate a video or create visual animation for a stock/company, call generate_stock_video."
     ),
-    workflow_description="Analyze the user request, call the necessary financial or Firestore tools, and render structured UI cards for trade briefs and watchlists.",
+    workflow_description="Analyze the user request, call the necessary financial, Firestore, or video generation tools, and render structured UI cards for trade briefs and watchlists.",
     ui_description=(
         "Keep every surface tiny and flat: ONE Card > ONE Column > a few Text rows. "
         "Never nest a Card inside a Card. "
@@ -79,6 +81,7 @@ root_agent = Agent(
         add_to_watchlist,
         get_watchlist,
         remove_from_watchlist,
+        generate_stock_video,
     ],
     after_model_callback=a2ui_callback,
 )

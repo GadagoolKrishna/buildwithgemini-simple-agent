@@ -21,51 +21,15 @@ from google.adk.apps import App
 from google.adk.models import Gemini
 from google.genai import types
 
-from a2ui.schema.manager import A2uiSchemaManager
-from a2ui.basic_catalog.provider import BasicCatalog
-
 from app.trading_tools import search_ticker, get_crossover_signals, get_company_news_sentiment
 from app.firestore_backend import add_to_watchlist, get_watchlist, remove_from_watchlist
 from app.video_tool import generate_stock_video
 from app.a2ui_utils import a2ui_callback
+from app.a2ui_prompt import INSTRUCTION
 
 MODEL = "gemini-2.5-flash"
 
-schema_manager = A2uiSchemaManager(
-    version="0.8",
-    catalogs=[BasicCatalog.get_config("0.8")],
-)
-
-instruction = schema_manager.generate_system_prompt(
-    role_description=(
-        "You are an expert Quantitative Swing Trading Assistant specializing in Moving Average Crossover Strategies, "
-        "managing the user's persistent trade watchlist in Firestore, and generating dynamic 3D financial videos. "
-        "When analyzing a company or stock: "
-        "1. If given a company name, call search_ticker to resolve the symbol. "
-        "2. Call get_crossover_signals to fetch 1-year OHLCV indicators, moving averages, and crossover events. "
-        "3. Call get_company_news_sentiment to inspect breaking headlines and catalyst risks. "
-        "4. Synthesize disciplined BUY, SELL, or HOLD recommendations with key price levels (Entry, Stop Loss, Target, Support/Resistance). "
-        "When asked about the watchlist, call get_watchlist, add_to_watchlist, or remove_from_watchlist. "
-        "When asked to generate a video or create visual animation for a stock/company, call generate_stock_video."
-    ),
-    workflow_description="Analyze the user request, call the necessary financial, Firestore, or video generation tools, and render structured UI cards for trade briefs and watchlists.",
-    ui_description=(
-        "Keep every surface tiny and flat: ONE Card > ONE Column > a few Text rows. "
-        "Never nest a Card inside a Card. "
-        "Use ONLY these components: Card, Column, Row, Text, and Image. Do not use "
-        "Table or Heading (unsupported), or Buttons, actions, or forms (they do "
-        "nothing in adk web). "
-        "You may include one Image component, but only when you have a public https "
-        "URL for the image. Never point an Image at a bare filename, an artifact name, or a non-http(s) path. "
-        "If you do not have a public URL, add a short Text line noting the image instead. "
-        "No markdown in text; use the usageHint property ('h1', 'h2', 'body') for "
-        "headings and emphasis. "
-        "Output ONLY the raw A2UI JSON array — no prose, and never wrap it in "
-        "<a2a_datapart_json> tags or 'kind'/'data'/'metadata' objects."
-    ),
-    include_schema=True,
-    include_examples=True,
-)
+instruction = INSTRUCTION
 
 root_agent = Agent(
     name="swing_trader",

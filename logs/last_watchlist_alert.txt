@@ -1,0 +1,23 @@
+=== Swing Trading Watchlist Alert (2026-09-29 06:24:05 UTC) ===
+Recipient: gadagool.krishna@gmail.com
+Total Tracked Assets: 4
+
+• AAPL (Apple Inc.):
+   Current Price: $338.4 | Live Signal: BUY (Conviction: 6)
+   Watchlist Target: $365.47 | Stop-Loss: $309.9
+   MA Alignment: BULLISH (SMA 20 > SMA 50)
+
+• MSFT (Microsoft Corporation):
+   Current Price: $509.22 | Live Signal: BUY (Conviction: 3)
+   Watchlist Target: $550.0 | Stop-Loss: $490.0
+   MA Alignment: BULLISH (SMA 20 > SMA 50)
+
+• NVDA (NVIDIA Corporation):
+   Current Price: $228.86 | Live Signal: BUY (Conviction: 3)
+   Watchlist Target: $247.17 | Stop-Loss: $208.93
+   MA Alignment: BULLISH (SMA 20 > SMA 50)
+
+• TSLA (Tesla, Inc.):
+   Current Price: $357.45 | Live Signal: BUY (Conviction: 4)
+   Watchlist Target: $386.05 | Stop-Loss: $339.58
+   MA Alignment: BULLISH (SMA 20 > SMA 50)
